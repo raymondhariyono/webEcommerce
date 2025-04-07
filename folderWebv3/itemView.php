@@ -1,4 +1,5 @@
 <?php
+session_start();
 $shopItems = [
   [
     "id" => 1,
@@ -101,12 +102,6 @@ foreach ($shopItems as $item) {
               <a class="nav-link" href="why.html"> About Us </a>
             </li>
           </ul>
-          <div class="user_option">
-            <a href="">
-              <i class="fa fa-user" aria-hidden="true"></i>
-              <span> Login </span>
-            </a>
-          </div>
         </div>
       </nav>
     </header>

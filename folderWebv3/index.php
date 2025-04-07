@@ -1,11 +1,5 @@
 <?php
 session_start();
-
-if (!isset($_SESSION['is_logged_in']) || $_SESSION['is_logged_in'] !== true) {
-  header("Location: loginpage.php");
-  exit();
-}
-
 $shopItems = [
   [
     "id" => 1,
@@ -113,9 +107,13 @@ $shopItems = [
                 <span> Logout </span>
               </a>
             <?php else: ?>
-              <a href="loginPage.php">
+              <a href="loginPage.php?form=signIn">
                 <i class="fa fa-user" aria-hidden="true"></i>
-                <span> Login/register </span>
+                <span> Login </span>
+              </a>
+              <a href="loginPage.php?form=signUp">
+                <i class="fa fa-user" aria-hidden="true"></i>
+                <span> register </span>
               </a>
             <?php endif; ?>
           </div>

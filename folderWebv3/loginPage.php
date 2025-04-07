@@ -73,8 +73,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $formPage === 'signUp') {
 
 //proses login
 if ($_SERVER["REQUEST_METHOD"] == "POST" && $formPage === 'signIn') {
-  $loginEmail = trim($_POST['loginEmail'] ?? '');
-  $loginPassword = trim($_POST['loginpassword'] ?? '');
+  $loginEmail = trim($_POST['loginEmail']);
+  $loginPassword = trim($_POST['loginpassword']);
 
   // Validasi input
   if (empty($loginEmail)) {
@@ -84,36 +84,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $formPage === 'signIn') {
     $errorsMessage['loginPassword'] = "Password tidak boleh kosong.";
   }
 
-  // Periksa apakah akun sudah terdaftar
-  if (empty($errorsMessage)) {
-    $userFound = false;
+  $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
+  $stmt->execute([$loginEmail]);
+  $user = $stmt->fetch();
 
-    if (isset($_SESSION['users'])) {
-      foreach ($_SESSION['users'] as $user) {
-        if ($user['email'] === $loginEmail) {
-          $userFound = true;
+  if (!$user) {
+    $errorsMessage['loginEmail'] = "Email tidak ditemukan.";
+  } else {
+    if (!password_verify($loginPassword, $user['password'])) {
+      $errorsMessage['loginPassword'] = "Password salah.";
+    } else {
+      // Login berhasil
+      $_SESSION['is_logged_in'] = true;
+      $_SESSION['user_email'] = $user['email'];
+      $_SESSION['user_name'] = $user['fullName'];
 
-          // Verifikasi password
-          if (password_verify($loginPassword, $user['password'])) {
-            $_SESSION['is_logged_in'] = true;
-            $_SESSION['user_email'] = $loginEmail;
-            $_SESSION['user_name'] = $user['fullName']; // Simpan nama pengguna ke sesi
-            $successMessage = "Login berhasil!";
-            header("Location: index.php");
-            exit();
-          } else {
-            $errorsMessage['loginPassword'] = "Password salah.";
-          }
-          break;
-        }
-      }
-    }
-
-    if (!$userFound) {
-      $errorsMessage['loginEmail'] = "Akun tidak ditemukan. Silakan daftar terlebih dahulu.";
+      header("Location: index.php");
+      exit();
     }
   }
 }
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -152,7 +144,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $formPage === 'signIn') {
                 value="<?php echo htmlspecialchars($loginEmail ?? ''); ?>" required>
             </div>
             <?php if (!empty($errorsMessage['loginEmail'])): ?>
-              <div class="error-text"><?php echo htmlspecialchars($errorsMessage['loginEmail']); ?></div>
+              <div class="login-error-text"><?php echo htmlspecialchars($errorsMessage['loginEmail']); ?></div>
             <?php endif; ?>
 
             <div class="input-group">
@@ -160,7 +152,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $formPage === 'signIn') {
               <input type="password" name="loginpassword" id="loginpassword" required>
             </div>
             <?php if (!empty($errorsMessage['loginPassword'])): ?>
-              <div class="error-text"><?php echo htmlspecialchars($errorsMessage['loginPassword']); ?></div>
+              <div class="login-error-text"><?php echo htmlspecialchars($errorsMessage['loginPassword']); ?></div>
             <?php endif; ?>
 
             <button type="submit">Sign In</button>
@@ -197,7 +189,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $formPage === 'signIn') {
               </div>
             </div>
 
-
             <div class="row">
               <div class="input-group">
                 <label for="dob">Date of Birth</label>
@@ -208,7 +199,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $formPage === 'signIn') {
                   <div class="register-error-text"><?php echo htmlspecialchars($errorsMessage['dob']); ?></div>
                 <?php endif; ?>
               </div>
-
 
               <div class="input-group">
                 <label for="balance">Balance</label>
@@ -237,7 +227,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && $formPage === 'signIn') {
                 <?php endif; ?>
               </div>
             </div>
-
 
             <div class="row">
               <div class="input-group">
